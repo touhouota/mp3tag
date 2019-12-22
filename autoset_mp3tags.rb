@@ -5,7 +5,7 @@ require "csv"
 config_path = Pathname.new("./config.yml")
 config = YAML.safe_load(config_path.read, symbolize_names: true)
 base_path = Pathname.new(config[:base_path])
-mp3_list = Dir[base_path.join("*")].select{|file| File.extname(file).start_with? ".mp3"}
+mp3_list = Dir[base_path.join("**/*")].select{|file| File.extname(file).start_with? ".mp3"}
 
 csv_options = {
   headers: true,
@@ -13,6 +13,7 @@ csv_options = {
 }
 master_csv = CSV.read(base_path.join(config[:csv_name]), csv_options)
 
+# MP3タグの編集
 mp3_list.each do |mp3_path|
   puts "処理中：#{File.basename(mp3_path)}"
   Mp3Info.open(mp3_path) do |mp3|
@@ -22,11 +23,11 @@ mp3_list.each do |mp3_path|
     next unless index
 
     info = master_csv[index]
+    info[:circle] = Pathname(mp3_path).dirname.split.last.to_s
     mp3.tag2[Mp3Info::TAG_MAPPING_2_3["title"]] = info[:title]
     mp3.tag2[Mp3Info::TAG_MAPPING_2_3["artist"]] = info[:vocal]
     mp3.tag2[Mp3Info::TAG_MAPPING_2_3["album"]] = info[:album]
-    # グループ
-    mp3.tag2["GPR1"] = info[:circle]
+    mp3.tag2[Mp3Info::TAG_MAPPING_2_3["group"]] = info[:circle]
     mp3.tag2[Mp3Info::TAG_MAPPING_2_3["genre_s"]] = info[:original]
   end
 end
