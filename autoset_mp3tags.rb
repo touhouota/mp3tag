@@ -11,7 +11,7 @@ csv_options = {
   headers: true,
   header_converters: ->(header) { header.to_sym }
 }
-master_csv = CSV.read(base_path.join(config[:csv_name]), csv_options)
+master_csv = CSV.read(base_path.join(config[:csv_name]), **csv_options)
 
 # MP3タグの編集
 mp3_list.each do |mp3_path|
